@@ -1,107 +1,100 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Pornstar Gallery</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <style>
-    body { font-family: Arial, sans-serif; padding: 20px; background: #f4f4f4; }
-    h1 { text-align: center; color: #222; }
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background: #f5f5f5;
+    }
+
+    h1 {
+      text-align: center;
+      padding: 20px 10px;
+      color: #222;
+    }
+
     .controls {
       max-width: 900px;
-      margin: 20px auto;
+      margin: 0 auto;
+      padding: 10px;
       display: flex;
       flex-wrap: wrap;
-      gap: 10px;
       justify-content: center;
+      gap: 10px;
     }
+
     input, select {
       padding: 10px;
       font-size: 16px;
-      border-radius: 5px;
       border: 1px solid #ccc;
-      width: 200px;
+      border-radius: 6px;
+      flex: 1 1 160px;
+      max-width: 250px;
     }
+
     .gallery {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
-      gap: 20px;
+      grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+      gap: 15px;
+      padding: 15px;
       max-width: 1000px;
       margin: 0 auto;
     }
+
     .card {
-      background: #fff;
+      background: white;
       border-radius: 10px;
       overflow: hidden;
-      box-shadow: 0 4px 8px rgba(0,0,0,0.1);
-      text-align: center;
-      transition: transform 0.3s;
-      cursor: pointer;
+      box-shadow: 0 3px 10px rgba(0, 0, 0, 0.1);
       position: relative;
+      transition: transform 0.3s ease;
     }
+
     .card:hover {
-      transform: scale(1.05);
+      transform: scale(1.03);
     }
-    .card img.static {
+
+    .card img {
       width: 100%;
-      height: 220px;
+      height: 200px;
       object-fit: cover;
-      border-bottom: 1px solid #eee;
-    }
-    .card img.gif {
-      display: none;
-      width: 100%;
-      height: 220px;
-      object-fit: cover;
-      position: absolute;
-      top: 0;
-      left: 0;
-    }
-    .card:hover img.static {
-      display: none;
-    }
-    .card:hover img.gif {
       display: block;
     }
+
     .card p {
-      margin: 10px 0;
+      text-align: center;
       font-weight: bold;
+      padding: 8px 5px;
+      margin: 0;
       font-size: 14px;
     }
-    .favorite {
+
+    .favorite-btn {
       position: absolute;
-      top: 8px;
+      top: 10px;
       right: 10px;
+      background: none;
+      border: none;
       font-size: 20px;
-      color: #bbb;
       cursor: pointer;
+      color: #ccc;
     }
-    .favorite.active {
+
+    .favorite-btn.active {
       color: red;
     }
-    .video-popup {
-      position: fixed;
-      top: 0; left: 0;
-      width: 100%; height: 100%;
-      background: rgba(0,0,0,0.8);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      z-index: 9999;
-    }
-    .video-popup iframe, .video-popup video {
-      max-width: 90%;
-      max-height: 90%;
-      border-radius: 10px;
-    }
-    #pagination {
-      text-align: center;
-      margin-top: 20px;
-    }
-    #pagination button {
-      margin: 0 5px;
-      padding: 5px 10px;
-      font-size: 16px;
+
+    @media (max-width: 500px) {
+      .card img {
+        height: 150px;
+      }
+      h1 {
+        font-size: 22px;
+      }
     }
   </style>
 </head>
@@ -117,123 +110,104 @@
   </div>
 
   <div class="gallery" id="gallery"></div>
-  <div id="pagination"></div>
 
   <script>
     const SHEET_ID = "1yFi2LC02KhBQZ4m6kfzad_1FBsom9QDABPUHS7RKOJM";
     const API_KEY = "AIzaSyDZqMYFCHG17qgCbrFhyoEIdrR9ua86348";
     const SHEET_NAME = "Sheet3";
-    const URL = `https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}/values/${SHEET_NAME}!A2:E500?key=${API_KEY}`;
-    const PAGE_SIZE = 12;
-    let currentPage = 1, allData = [];
+    const URL = `https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}/values/${SHEET_NAME}!A2:D200?key=${API_KEY}`;
 
     async function fetchData() {
       try {
         const res = await fetch(URL);
         const data = await res.json();
-        allData = data.values || [];
-        renderPagination();
-        renderGallery();
-        populateCategories();
+        const rows = data.values;
+        const gallery = document.getElementById("gallery");
+        const categorySelect = document.getElementById("categorySelect");
+        const categories = new Set();
+        const favorites = JSON.parse(localStorage.getItem("favorites")) || [];
+
+        rows.forEach(row => {
+          const name = row[0];
+          const category = row[1] || "unknown";
+          const imageUrl = row[2];
+          const gifUrl = row[3] || imageUrl;
+
+          categories.add(category.toLowerCase());
+
+          const card = document.createElement("div");
+          card.className = "card";
+          card.setAttribute("data-name", name.toLowerCase());
+          card.setAttribute("data-category", category.toLowerCase());
+          card.innerHTML = `
+            <button class="favorite-btn ${favorites.includes(name.toLowerCase()) ? 'active' : ''}">❤️</button>
+            <img src="${imageUrl}" data-static="${imageUrl}" data-gif="${gifUrl}" alt="${name}" loading="lazy">
+            <p>${name}</p>
+          `;
+          gallery.appendChild(card);
+        });
+
+        categories.forEach(cat => {
+          const option = document.createElement("option");
+          option.value = cat;
+          option.textContent = cat.charAt(0).toUpperCase() + cat.slice(1);
+          categorySelect.appendChild(option);
+        });
+
+        filterGallery();
       } catch (err) {
         console.error("Fetch failed:", err);
       }
     }
 
-    function populateCategories() {
-      const categorySelect = document.getElementById("categorySelect");
-      const categories = new Set(allData.map(row => (row[1] || "uncategorized").toLowerCase()));
-      categories.forEach(cat => {
-        const option = document.createElement("option");
-        option.value = cat;
-        option.textContent = cat.charAt(0).toUpperCase() + cat.slice(1);
-        categorySelect.appendChild(option);
-      });
-    }
-
-    function renderGallery() {
-      const gallery = document.getElementById("gallery");
-      gallery.innerHTML = "";
+    function filterGallery() {
       const search = document.getElementById("searchInput").value.toLowerCase();
       const category = document.getElementById("categorySelect").value;
-      const start = (currentPage - 1) * PAGE_SIZE;
-      const end = start + PAGE_SIZE;
+      const cards = document.querySelectorAll(".card");
 
-      const filtered = allData.filter(row => {
-        const name = (row[0] || "").toLowerCase();
-        const cat = (row[1] || "uncategorized").toLowerCase();
-        return name.includes(search) && (category === "all" || cat === category);
-      });
-
-      filtered.slice(start, end).forEach(row => {
-        const [name, category, imageUrl, videoUrl, gifUrl] = row;
-        const card = document.createElement("div");
-        card.className = "card";
-        card.setAttribute("data-name", name.toLowerCase());
-        card.setAttribute("data-category", category.toLowerCase());
-
-        const favKey = `fav_${name.toLowerCase()}`;
-        const favActive = localStorage.getItem(favKey) === "1" ? "active" : "";
-
-        card.innerHTML = `
-          <div class="favorite ${favActive}" onclick="event.stopPropagation(); toggleFavorite('${favKey}', this)">&#10084;</div>
-          <img loading="lazy" class="static" src="${imageUrl}" alt="${name}">
-          <img loading="lazy" class="gif" src="${gifUrl || imageUrl}" alt="${name}">
-          <p>${name}</p>
-        `;
-        card.addEventListener("click", () => showVideo(videoUrl));
-        gallery.appendChild(card);
+      cards.forEach(card => {
+        const name = card.dataset.name;
+        const cat = card.dataset.category;
+        const match = name.includes(search) && (category === "all" || cat === category);
+        card.style.display = match ? "block" : "none";
       });
     }
 
-    function renderPagination() {
-      const totalPages = Math.ceil(allData.length / PAGE_SIZE);
-      const pagination = document.getElementById("pagination");
-      pagination.innerHTML = "";
-      for (let i = 1; i <= totalPages; i++) {
-        const btn = document.createElement("button");
-        btn.textContent = i;
-        btn.onclick = () => { currentPage = i; renderGallery(); };
-        pagination.appendChild(btn);
+    document.getElementById("searchInput").addEventListener("input", filterGallery);
+    document.getElementById("categorySelect").addEventListener("change", filterGallery);
+
+    // Favorite toggle
+    document.addEventListener("click", e => {
+      if (e.target.classList.contains("favorite-btn")) {
+        const btn = e.target;
+        const card = btn.closest(".card");
+        const name = card.dataset.name;
+        let favs = JSON.parse(localStorage.getItem("favorites")) || [];
+        if (favs.includes(name)) {
+          favs = favs.filter(f => f !== name);
+          btn.classList.remove("active");
+        } else {
+          favs.push(name);
+          btn.classList.add("active");
+        }
+        localStorage.setItem("favorites", JSON.stringify(favs));
       }
-    }
-
-    function toggleFavorite(key, el) {
-      const active = localStorage.getItem(key) === "1";
-      localStorage.setItem(key, active ? "0" : "1");
-      el.classList.toggle("active");
-    }
-
-    function showVideo(url) {
-      const popup = document.createElement("div");
-      popup.className = "video-popup";
-      let embed;
-      if (url.includes("youtube.com") || url.includes("youtu.be")) {
-        const videoId = url.split("v=")[1]?.split("&")[0] || url.split("youtu.be/")[1];
-        embed = `<iframe src="https://www.youtube.com/embed/${videoId}?autoplay=1" frameborder="0" allow="autoplay; encrypted-media" allowfullscreen></iframe>`;
-      } else if (url.endsWith(".mp4")) {
-        embed = `<video src="${url}" controls autoplay></video>`;
-      } else {
-        window.open(url, "_blank"); return;
-      }
-      popup.innerHTML = embed;
-      popup.addEventListener("click", () => popup.remove());
-      document.body.appendChild(popup);
-    }
-
-    document.getElementById("searchInput").addEventListener("input", () => {
-      currentPage = 1;
-      renderPagination();
-      renderGallery();
     });
-    document.getElementById("categorySelect").addEventListener("change", () => {
-      currentPage = 1;
-      renderPagination();
-      renderGallery();
+
+    // GIF preview on hover
+    document.addEventListener("mouseover", e => {
+      if (e.target.tagName === "IMG" && e.target.dataset.gif) {
+        e.target.src = e.target.dataset.gif;
+      }
+    });
+
+    document.addEventListener("mouseout", e => {
+      if (e.target.tagName === "IMG" && e.target.dataset.static) {
+        e.target.src = e.target.dataset.static;
+      }
     });
 
     fetchData();
   </script>
-
 </body>
 </html>
