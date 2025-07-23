@@ -2,429 +2,238 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>🔐 Enter Your Code</title>
+  <title>Pornstar Gallery</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <link rel="stylesheet"
-    href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css"/>
   <style>
-    /* Only style the login box, not the whole body */
-    body {
-      min-height: 100vh;
-      margin: 0;
-      font-family: 'Poppins', 'Segoe UI', Arial, sans-serif;
-    }
-    .login-container {
-      max-width: 370px;
-      width: 100%;
-      margin: 40px auto;
-      background: #fff;
-      border-radius: 18px;
-      box-shadow: 0 8px 32px rgba(99,102,241,0.13);
-      padding: 38px 26px 32px 26px;
-      text-align: center;
-      position: relative;
-      border: 1.5px solid #e0e7ff;
-      animation: fadeIn 1s cubic-bezier(.4,0,.2,1);
-    }
-    @keyframes fadeIn {
-      from { opacity: 0; transform: translateY(40px);}
-      to { opacity: 1; transform: none;}
-    }
-    .login-container h2 {
-      margin-bottom: 20px;
-      font-weight: 800;
-      color: #312e81;
-      letter-spacing: 0.5px;
-      font-size: 1.5rem;
+    body { font-family: Arial, sans-serif; padding: 20px; background: #f4f4f4; }
+    h1 { text-align: center; color: #222; }
+    .controls {
+      max-width: 900px;
+      margin: 20px auto;
       display: flex;
-      align-items: center;
-      justify-content: center;
+      flex-wrap: wrap;
       gap: 10px;
+      justify-content: center;
     }
-    .input-group {
-      position: relative;
-      margin-bottom: 22px;
-    }
-    #codeInput {
-      width: 100%;
-      padding: 15px 48px 15px 18px;
-      border-radius: 10px;
-      border: 1.7px solid #c7d2fe;
-      font-size: 17px;
-      transition: border 0.2s, box-shadow 0.2s;
-      outline: none;
-      background: #f1f5f9;
-      color: #1e293b;
-      box-sizing: border-box;
-      font-weight: 600;
-      box-shadow: 0 2px 8px rgba(99,102,241,0.06);
-      letter-spacing: 0.5px;
-    }
-    #codeInput:focus {
-      border-color: #6366f1;
-      background: #fff;
-      box-shadow: 0 0 0 2px #a5b4fc55;
-    }
-    .input-group .fa-key {
-      position: absolute;
-      right: 16px;
-      top: 50%;
-      transform: translateY(-50%);
-      color: #6366f1;
-      font-size: 20px;
-      opacity: 0.85;
-      pointer-events: none;
-    }
-    .submit-btn {
-      margin-top: 8px;
-      padding: 13px 0;
-      width: 100%;
-      background: linear-gradient(90deg, #6366f1 60%, #3b82f6 100%);
-      color: #fff;
-      border: none;
-      border-radius: 10px;
-      font-size: 17px;
-      font-weight: 700;
-      cursor: pointer;
-      box-shadow: 0 2px 8px rgba(99,102,241,0.10);
-      transition: background 0.2s, transform 0.1s;
-      letter-spacing: 0.5px;
-      outline: none;
-    }
-    .submit-btn:hover, .submit-btn:focus {
-      background: linear-gradient(90deg, #4f46e5 60%, #2563eb 100%);
-      transform: translateY(-2px) scale(1.03);
-    }
-    .free-btn {
-      margin-top: 12px;
-      width: 100%;
-      background: linear-gradient(90deg, #22d3ee 0%, #6366f1 100%);
-      color: #fff;
-      border: none;
-      border-radius: 10px;
+    input, select {
+      padding: 10px;
       font-size: 16px;
-      font-weight: 700;
+      border-radius: 5px;
+      border: 1px solid #ccc;
+      width: 200px;
+    }
+    .gallery {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+      gap: 20px;
+      max-width: 1000px;
+      margin: 0 auto;
+    }
+    .card {
+      background: #fff;
+      border-radius: 10px;
+      overflow: hidden;
+      box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+      text-align: center;
+      transition: transform 0.3s;
       cursor: pointer;
-      padding: 12px 0;
-      box-shadow: 0 2px 8px rgba(34,211,238,0.10);
-      transition: background 0.2s, transform 0.1s;
-      letter-spacing: 0.5px;
-      outline: none;
+      position: relative;
+    }
+    .card:hover {
+      transform: scale(1.05);
+    }
+    .card img.static {
+      width: 100%;
+      height: 220px;
+      object-fit: cover;
+      border-bottom: 1px solid #eee;
+    }
+    .card img.gif {
+      display: none;
+      width: 100%;
+      height: 220px;
+      object-fit: cover;
+      position: absolute;
+      top: 0;
+      left: 0;
+    }
+    .card:hover img.static {
+      display: none;
+    }
+    .card:hover img.gif {
+      display: block;
+    }
+    .card p {
+      margin: 10px 0;
+      font-weight: bold;
+      font-size: 14px;
+    }
+    .favorite {
+      position: absolute;
+      top: 8px;
+      right: 10px;
+      font-size: 20px;
+      color: #bbb;
+      cursor: pointer;
+    }
+    .favorite.active {
+      color: red;
+    }
+    .video-popup {
+      position: fixed;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      background: rgba(0,0,0,0.8);
       display: flex;
       align-items: center;
       justify-content: center;
-      gap: 8px;
+      z-index: 9999;
     }
-    .free-btn:hover, .free-btn:focus {
-      background: linear-gradient(90deg, #6366f1 0%, #22d3ee 100%);
-      transform: translateY(-2px) scale(1.03);
+    .video-popup iframe, .video-popup video {
+      max-width: 90%;
+      max-height: 90%;
+      border-radius: 10px;
     }
-    .notif-bar {
-      margin-top: 20px;
-      padding: 13px 0;
-      border-radius: 9px;
-      font-size: 15px;
-      font-weight: 600;
-      transition: background 0.2s, color 0.2s;
-      min-height: 24px;
-      box-shadow: 0 1px 4px rgba(99,102,241,0.04);
-      letter-spacing: 0.2px;
-    }
-    .notif-success {
-      background: #e0fbe6;
-      color: #15803d;
-      border: 1px solid #bbf7d0;
-    }
-    .notif-error {
-      background: #fef2f2;
-      color: #dc2626;
-      border: 1px solid #fecaca;
-    }
-    .notif-info {
-      background: #eff6ff;
-      color: #2563eb;
-      border: 1px solid #bae6fd;
-    }
-    .notif-warning {
-      background: #fef9c3;
-      color: #b45309;
-      border: 1px solid #fde68a;
-    }
-    #countdown {
-      margin-top: 10px;
-      font-size: 14px;
-      font-weight: 500;
-      letter-spacing: 0.2px;
-      transition: color 0.2s;
-    }
-    #lastUsed {
-      font-size: 13px;
-      color: #64748b;
-      margin-top: 8px;
-    }
-
-    /* Member Price List Styles */
-    .member-price-list {
-      margin-top: 30px;
-      background: linear-gradient(90deg, #f1f5f9 60%, #e0e7ff 100%);
-      border-radius: 13px;
-      box-shadow: 0 2px 8px rgba(99,102,241,0.06);
-      padding: 18px 16px 12px 16px;
-      text-align: left;
-      border: 1.2px solid #c7d2fe;
-      font-size: 15px;
-      animation: fadeIn 1.1s cubic-bezier(.4,0,.2,1);
-    }
-    .mpl-title {
-      font-weight: 700;
-      color: #312e81;
-      font-size: 1.08rem;
-      margin-bottom: 10px;
-      display: flex;
-      align-items: center;
-      gap: 7px;
-    }
-    .member-price-list ul {
-      list-style: none;
-      padding: 0;
-      margin: 0;
-    }
-    .member-price-list li {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      padding: 7px 0;
-      border-bottom: 1px dashed #c7d2fe;
-    }
-    .member-price-list li:last-child {
-      border-bottom: none;
-    }
-    .mpl-tier {
-      display: flex;
-      align-items: center;
-      gap: 6px;
-      font-weight: 600;
-    }
-    .mpl-tier.basic { color: #6366f1; }
-    .mpl-tier.premium { color: #0ea5e9; }
-    .mpl-tier.vip { color: #f59e42; }
-    .mpl-price {
-      font-weight: 700;
-      color: #1e293b;
-    }
-    .mpl-duration {
-      font-weight: 400;
-      color: #64748b;
-      font-size: 13px;
-      margin-left: 2px;
-    }
-    .telegram-link {
-      margin-top: 18px;
+    #pagination {
       text-align: center;
+      margin-top: 20px;
     }
-    .telegram-link a {
-      color: #6366f1;
-      text-decoration: none;
-      font-weight: 600;
-      font-size: 15px;
-      transition: color 0.2s;
-    }
-    .telegram-link a:hover {
-      color: #312e81;
-      text-decoration: underline;
-    }
-    @media (max-width: 500px) {
-      .login-container {
-        margin: 24px 4px;
-        padding: 16px 4px 12px 4px;
-      }
-      #codeInput, .submit-btn, .free-btn {
-        font-size: 15px;
-      }
-      .login-container h2 { font-size: 1.1rem; }
-      .member-price-list {
-        font-size: 13.5px;
-        padding: 10px 4px 6px 8px;
-      }
-      .mpl-title { font-size: 0.98rem; }
-      .telegram-link a { font-size: 14px; }
+    #pagination button {
+      margin: 0 5px;
+      padding: 5px 10px;
+      font-size: 16px;
     }
   </style>
 </head>
 <body>
-  <div class="login-container">
-    <h2><i class="fa-solid fa-key"></i> Enter Your Code</h2>
-    <div class="input-group">
-      <input type="text" id="codeInput" placeholder="Enter your code" autocomplete="off" autofocus>
-      <i class="fa-solid fa-key"></i>
-    </div>
-    <button class="submit-btn" onclick="checkCode()">Login <i class="fa-solid fa-arrow-right-to-bracket"></i></button>
-    <button class="free-btn" onclick="window.open('https://dev-shinoeronf.pantheonsite.io/code-copy-page/', '_blank')">
-      <i class="fa-solid fa-gift"></i> Free Code ရယူရန်
-    </button>
-    <div id="status" class="notif-bar notif-info"></div>
-    <div id="countdown"></div>
-    <div id="lastUsed"></div>
-    <!-- Member Price List Start -->
-    <div class="member-price-list">
-      <div class="mpl-title">
-        <i class="fa-solid fa-crown"></i> Member Price List
-      </div>
-      <ul>
-        <li>
-          <span class="mpl-tier basic"><i class="fa-solid fa-user"></i> Basic</span>
-          <span class="mpl-price">2,000 MMK <span class="mpl-duration">1/month</span></span>
-        </li>
-        <li>
-          <span class="mpl-tier premium"><i class="fa-solid fa-gem"></i> Premium</span>
-          <span class="mpl-price">10,000 MMK <span class="mpl-duration">6/month</span></span>
-        </li>
-        <li>
-          <span class="mpl-tier vip"><i class="fa-solid fa-star"></i> VIP</span>
-          <span class="mpl-price">20,000 MMK <span class="mpl-duration">1/year</span></span>
-        </li>
-      </ul>
-    </div>
-    <!-- Member Price List End -->
-    <div class="telegram-link">
-      <a href="https://t.me/thawminhtet" target="_blank">
-        <i class="fa-brands fa-telegram"></i> ဆက်သွယ်ရန် Telegram
-      </a>
-    </div>
+
+  <h1>PORNSTAR GALLERY</h1>
+
+  <div class="controls">
+    <input type="text" id="searchInput" placeholder="Search...">
+    <select id="categorySelect">
+      <option value="all">All Categories</option>
+    </select>
   </div>
 
+  <div class="gallery" id="gallery"></div>
+  <div id="pagination"></div>
+
   <script>
-    const SHEET_URL = "https://sheets.googleapis.com/v4/spreadsheets/1yFi2LC02KhBQZ4m6kfzad_1FBsom9QDABPUHS7RKOJM/values/Sheet2!A2:D100?key=AIzaSyDZqMYFCHG17qgCbrFhyoEIdrR9ua86348";
+    const SHEET_ID = "1yFi2LC02KhBQZ4m6kfzad_1FBsom9QDABPUHS7RKOJM";
+    const API_KEY = "AIzaSyDZqMYFCHG17qgCbrFhyoEIdrR9ua86348";
+    const SHEET_NAME = "Sheet3";
+    const URL = `https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}/values/${SHEET_NAME}!A2:E500?key=${API_KEY}`;
+    const PAGE_SIZE = 12;
+    let currentPage = 1, allData = [];
 
-    const input = document.getElementById("codeInput");
-    const status = document.getElementById("status");
-    const countdown = document.getElementById("countdown");
-    const lastUsed = document.getElementById("lastUsed");
-    const memberPriceList = document.querySelector('.member-price-list');
-
-    // Enter key support
-    input.addEventListener("keyup", function(e) {
-      if (e.key === "Enter") checkCode();
-    });
-
-    // Load saved code
-    window.addEventListener("DOMContentLoaded", () => {
-      const savedCode = localStorage.getItem("saved_code");
-      const savedExpire = localStorage.getItem("saved_expire");
-
-      if (savedCode && savedExpire) {
-        const expireDate = new Date(savedExpire + "T23:59:59");
-        const now = new Date();
-
-        if (now <= expireDate) {
-          input.value = savedCode;
-          lastUsed.textContent = `📝 Last used: ${savedCode} (expires on ${savedExpire})`;
-          updateCountdown(expireDate);
-          // Hide member price list if logged in
-          if (memberPriceList) memberPriceList.style.display = "none";
-        } else {
-          localStorage.removeItem("saved_code");
-          localStorage.removeItem("saved_expire");
-          if (memberPriceList) memberPriceList.style.display = "block";
-        }
-      } else {
-        if (memberPriceList) memberPriceList.style.display = "block";
-      }
-    });
-
-    async function checkCode() {
-      const code = input.value.trim();
-      status.className = "notif-bar notif-info";
-      status.textContent = "🔄 Checking...";
-      countdown.textContent = "";
-      lastUsed.textContent = "";
-
+    async function fetchData() {
       try {
-        const res = await fetch(SHEET_URL);
+        const res = await fetch(URL);
         const data = await res.json();
-        const rows = data.values;
-
-        const now = new Date();
-
-        // Find the code in the sheet
-        const found = rows.find(row => {
-          const [sheetCode, expireDate, used] = row;
-          const expire = new Date(expireDate + "T23:59:59");
-          return sheetCode === code && used.toLowerCase() !== "true" && now <= expire;
-        });
-
-        if (!found) {
-          status.className = "notif-bar notif-error";
-          status.textContent = "❌ Invalid, expired, or already used code.";
-          if (memberPriceList) memberPriceList.style.display = "block";
-          return;
-        }
-
-        const [sheetCode, expireDate, used, link] = found;
-        const expireObj = new Date(expireDate + "T23:59:59");
-
-        // Save code
-        localStorage.setItem("saved_code", sheetCode);
-        localStorage.setItem("saved_expire", expireDate);
-
-        lastUsed.innerText = `📝 Last used: ${sheetCode} (expires on ${expireDate})`;
-        updateCountdown(expireObj);
-
-        status.className = "notif-bar notif-success";
-        status.textContent = "✅ Redirecting...";
-        if (memberPriceList) memberPriceList.style.display = "none";
-        setTimeout(() => {
-          window.location.href = link;
-        }, 1200);
+        allData = data.values || [];
+        renderPagination();
+        renderGallery();
+        populateCategories();
       } catch (err) {
-        status.className = "notif-bar notif-error";
-        status.textContent = "⚠️ Error loading codes. Check API or Sheet settings.";
-        if (memberPriceList) memberPriceList.style.display = "block";
-        console.error(err);
+        console.error("Fetch failed:", err);
       }
     }
 
-    // Code Expiry Notification included here
-    function updateCountdown(expiryDate) {
-      function format(ms) {
-        const total = Math.floor(ms / 1000);
-        const d = Math.floor(total / 86400);
-        const h = Math.floor((total % 86400) / 3600);
-        const m = Math.floor((total % 3600) / 60);
-        const s = total % 60;
-        return `${d}d ${h}h ${m}m ${s}s`;
-      }
-
-      function tick() {
-        const now = new Date();
-        const diff = expiryDate - now;
-
-        if (diff <= 0) {
-          countdown.textContent = "⛔ Code has now expired.";
-          countdown.style.color = "#dc2626";
-          localStorage.removeItem("saved_code");
-          localStorage.removeItem("saved_expire");
-          // Show member price list again
-          if (memberPriceList) memberPriceList.style.display = "block";
-          status.className = "notif-bar notif-error";
-          status.textContent = "⛔ Your code has expired. Please enter a new code.";
-          return;
-        }
-
-        // Code Expiry Notification (1 hour left)
-        if (diff <= 3600 * 1000 && diff > 0) {
-          countdown.style.color = "#b45309";
-          countdown.textContent = `⚠️ Your code will expire soon! (${format(diff)} left)`;
-        } else {
-          countdown.style.color = "#2563eb";
-          countdown.textContent = `⏳ Time left: ${format(diff)}`;
-        }
-
-        setTimeout(tick, 1000);
-      }
-
-      tick();
+    function populateCategories() {
+      const categorySelect = document.getElementById("categorySelect");
+      const categories = new Set(allData.map(row => (row[1] || "uncategorized").toLowerCase()));
+      categories.forEach(cat => {
+        const option = document.createElement("option");
+        option.value = cat;
+        option.textContent = cat.charAt(0).toUpperCase() + cat.slice(1);
+        categorySelect.appendChild(option);
+      });
     }
+
+    function renderGallery() {
+      const gallery = document.getElementById("gallery");
+      gallery.innerHTML = "";
+      const search = document.getElementById("searchInput").value.toLowerCase();
+      const category = document.getElementById("categorySelect").value;
+      const start = (currentPage - 1) * PAGE_SIZE;
+      const end = start + PAGE_SIZE;
+
+      const filtered = allData.filter(row => {
+        const name = (row[0] || "").toLowerCase();
+        const cat = (row[1] || "uncategorized").toLowerCase();
+        return name.includes(search) && (category === "all" || cat === category);
+      });
+
+      filtered.slice(start, end).forEach(row => {
+        const [name, category, imageUrl, videoUrl, gifUrl] = row;
+        const card = document.createElement("div");
+        card.className = "card";
+        card.setAttribute("data-name", name.toLowerCase());
+        card.setAttribute("data-category", category.toLowerCase());
+
+        const favKey = `fav_${name.toLowerCase()}`;
+        const favActive = localStorage.getItem(favKey) === "1" ? "active" : "";
+
+        card.innerHTML = `
+          <div class="favorite ${favActive}" onclick="event.stopPropagation(); toggleFavorite('${favKey}', this)">&#10084;</div>
+          <img loading="lazy" class="static" src="${imageUrl}" alt="${name}">
+          <img loading="lazy" class="gif" src="${gifUrl || imageUrl}" alt="${name}">
+          <p>${name}</p>
+        `;
+        card.addEventListener("click", () => showVideo(videoUrl));
+        gallery.appendChild(card);
+      });
+    }
+
+    function renderPagination() {
+      const totalPages = Math.ceil(allData.length / PAGE_SIZE);
+      const pagination = document.getElementById("pagination");
+      pagination.innerHTML = "";
+      for (let i = 1; i <= totalPages; i++) {
+        const btn = document.createElement("button");
+        btn.textContent = i;
+        btn.onclick = () => { currentPage = i; renderGallery(); };
+        pagination.appendChild(btn);
+      }
+    }
+
+    function toggleFavorite(key, el) {
+      const active = localStorage.getItem(key) === "1";
+      localStorage.setItem(key, active ? "0" : "1");
+      el.classList.toggle("active");
+    }
+
+    function showVideo(url) {
+      const popup = document.createElement("div");
+      popup.className = "video-popup";
+      let embed;
+      if (url.includes("youtube.com") || url.includes("youtu.be")) {
+        const videoId = url.split("v=")[1]?.split("&")[0] || url.split("youtu.be/")[1];
+        embed = `<iframe src="https://www.youtube.com/embed/${videoId}?autoplay=1" frameborder="0" allow="autoplay; encrypted-media" allowfullscreen></iframe>`;
+      } else if (url.endsWith(".mp4")) {
+        embed = `<video src="${url}" controls autoplay></video>`;
+      } else {
+        window.open(url, "_blank"); return;
+      }
+      popup.innerHTML = embed;
+      popup.addEventListener("click", () => popup.remove());
+      document.body.appendChild(popup);
+    }
+
+    document.getElementById("searchInput").addEventListener("input", () => {
+      currentPage = 1;
+      renderPagination();
+      renderGallery();
+    });
+    document.getElementById("categorySelect").addEventListener("change", () => {
+      currentPage = 1;
+      renderPagination();
+      renderGallery();
+    });
+
+    fetchData();
   </script>
+
 </body>
 </html>
