@@ -2,106 +2,107 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Pornstar Gallery</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Pornstar Gallery (Tiers + Modal)</title>
   <style>
-    body {
-      margin: 0;
-      font-family: Arial, sans-serif;
-      background: #f5f5f5;
-    }
-
-    h1 {
-      text-align: center;
-      padding: 20px 10px;
-      color: #222;
-    }
+    body { font-family: Arial; margin: 0; padding: 20px; background: #f8f8f8; }
+    h1 { text-align: center; color: #333; }
 
     .controls {
-      max-width: 900px;
-      margin: 0 auto;
-      padding: 10px;
       display: flex;
       flex-wrap: wrap;
       justify-content: center;
       gap: 10px;
+      margin-bottom: 20px;
     }
-
     input, select {
       padding: 10px;
       font-size: 16px;
+      border-radius: 5px;
       border: 1px solid #ccc;
-      border-radius: 6px;
-      flex: 1 1 160px;
-      max-width: 250px;
     }
 
     .gallery {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+      grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
       gap: 15px;
-      padding: 15px;
       max-width: 1000px;
       margin: 0 auto;
     }
 
     .card {
-      background: white;
+      background: #fff;
       border-radius: 10px;
       overflow: hidden;
-      box-shadow: 0 3px 10px rgba(0, 0, 0, 0.1);
-      position: relative;
-      transition: transform 0.3s ease;
+      box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+      cursor: pointer;
+      transition: transform 0.3s;
     }
-
-    .card:hover {
-      transform: scale(1.03);
-    }
-
+    .card:hover { transform: scale(1.05); }
     .card img {
       width: 100%;
-      height: 200px;
+      height: 220px;
       object-fit: cover;
-      display: block;
+      border-bottom: 1px solid #eee;
     }
-
     .card p {
-      text-align: center;
+      margin: 10px 0;
       font-weight: bold;
-      padding: 8px 5px;
-      margin: 0;
       font-size: 14px;
+      text-align: center;
     }
 
-    .favorite-btn {
-      position: absolute;
-      top: 10px;
-      right: 10px;
-      background: none;
+    /* Modal Styles */
+    .modal {
+      position: fixed;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      background: rgba(0,0,0,0.7);
+      display: none;
+      justify-content: center;
+      align-items: center;
+      z-index: 999;
+    }
+    .modal-content {
+      background: #fff;
+      border-radius: 15px;
+      padding: 20px;
+      max-width: 400px;
+      width: 90%;
+      text-align: center;
+      position: relative;
+    }
+    .modal-content img {
+      width: 100%;
+      height: auto;
+      border-radius: 10px;
+      margin-bottom: 15px;
+    }
+    .modal-content h2 { margin: 10px 0; }
+    .modal-content .price {
+      font-size: 18px;
+      font-weight: bold;
+      color: #d33;
+      margin: 10px 0;
+    }
+    .modal-content .buttons {
+      display: flex;
+      justify-content: space-between;
+      margin-top: 15px;
+    }
+    .modal-content button {
+      padding: 10px 20px;
       border: none;
-      font-size: 20px;
+      border-radius: 8px;
+      font-weight: bold;
       cursor: pointer;
-      color: #ccc;
     }
-
-    .favorite-btn.active {
-      color: red;
-    }
-
-    @media (max-width: 500px) {
-      .card img {
-        height: 150px;
-      }
-      h1 {
-        font-size: 22px;
-      }
-    }
+    .modal-content .cancel { background: #ccc; }
+    .modal-content .go { background: #28a745; color: white; }
   </style>
 </head>
 <body>
-
-  <h1>PORNSTAR GALLERY</h1>
-
+  <h1>🌟 Pornstar Gallery</h1>
   <div class="controls">
     <input type="text" id="searchInput" placeholder="Search...">
     <select id="categorySelect">
@@ -111,42 +112,70 @@
 
   <div class="gallery" id="gallery"></div>
 
+  <!-- Modal -->
+  <div class="modal" id="previewModal">
+    <div class="modal-content">
+      <img id="modalImage" src="" alt="">
+      <h2 id="modalName"></h2>
+      <div class="price" id="modalPrice"></div>
+      <div class="buttons">
+        <button class="cancel" onclick="closeModal()">Cancel</button>
+        <button class="go" id="goBtn">Get Code</button>
+      </div>
+    </div>
+  </div>
+
   <script>
     const SHEET_ID = "1yFi2LC02KhBQZ4m6kfzad_1FBsom9QDABPUHS7RKOJM";
     const API_KEY = "AIzaSyDZqMYFCHG17qgCbrFhyoEIdrR9ua86348";
     const SHEET_NAME = "Sheet3";
-    const URL = `https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}/values/${SHEET_NAME}!A2:D200?key=${API_KEY}`;
+    const URL = `https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}/values/${SHEET_NAME}!A2:E100?key=${API_KEY}`;
+
+    const gallery = document.getElementById("gallery");
+    const categorySelect = document.getElementById("categorySelect");
+    const modal = document.getElementById("previewModal");
+    const modalImage = document.getElementById("modalImage");
+    const modalName = document.getElementById("modalName");
+    const modalPrice = document.getElementById("modalPrice");
+    const goBtn = document.getElementById("goBtn");
+
+    let linkToGo = "";
 
     async function fetchData() {
       try {
         const res = await fetch(URL);
         const data = await res.json();
         const rows = data.values;
-        const gallery = document.getElementById("gallery");
-        const categorySelect = document.getElementById("categorySelect");
+
         const categories = new Set();
-        const favorites = JSON.parse(localStorage.getItem("favorites")) || [];
 
         rows.forEach(row => {
-          const name = row[0];
-          const category = row[1] || "unknown";
-          const imageUrl = row[2];
-          const gifUrl = row[3] || imageUrl;
+          const [name, category, imageUrl, link, price] = row;
+          if (!name || !imageUrl) return;
 
-          categories.add(category.toLowerCase());
+          if (category) categories.add(category.toLowerCase());
 
           const card = document.createElement("div");
           card.className = "card";
           card.setAttribute("data-name", name.toLowerCase());
-          card.setAttribute("data-category", category.toLowerCase());
+          card.setAttribute("data-category", category?.toLowerCase());
           card.innerHTML = `
-            <button class="favorite-btn ${favorites.includes(name.toLowerCase()) ? 'active' : ''}">❤️</button>
-            <img src="${imageUrl}" data-static="${imageUrl}" data-gif="${gifUrl}" alt="${name}" loading="lazy">
+            <img loading="lazy" src="${imageUrl}" alt="${name}">
             <p>${name}</p>
           `;
+
+          card.addEventListener("click", () => {
+            modalImage.src = imageUrl;
+            modalName.textContent = name;
+            modalPrice.textContent = `💰 ${price || 'Basic'}`;
+            linkToGo = link || "#";
+            modal.style.display = "flex";
+          });
+
           gallery.appendChild(card);
         });
 
+        // Populate category dropdown
         categories.forEach(cat => {
           const option = document.createElement("option");
           option.value = cat;
@@ -154,7 +183,6 @@
           categorySelect.appendChild(option);
         });
 
-        filterGallery();
       } catch (err) {
         console.error("Fetch failed:", err);
       }
@@ -162,7 +190,7 @@
 
     function filterGallery() {
       const search = document.getElementById("searchInput").value.toLowerCase();
-      const category = document.getElementById("categorySelect").value;
+      const category = categorySelect.value;
       const cards = document.querySelectorAll(".card");
 
       cards.forEach(card => {
@@ -176,34 +204,15 @@
     document.getElementById("searchInput").addEventListener("input", filterGallery);
     document.getElementById("categorySelect").addEventListener("change", filterGallery);
 
-    // Favorite toggle
-    document.addEventListener("click", e => {
-      if (e.target.classList.contains("favorite-btn")) {
-        const btn = e.target;
-        const card = btn.closest(".card");
-        const name = card.dataset.name;
-        let favs = JSON.parse(localStorage.getItem("favorites")) || [];
-        if (favs.includes(name)) {
-          favs = favs.filter(f => f !== name);
-          btn.classList.remove("active");
-        } else {
-          favs.push(name);
-          btn.classList.add("active");
-        }
-        localStorage.setItem("favorites", JSON.stringify(favs));
-      }
-    });
+    function closeModal() {
+      modal.style.display = "none";
+      linkToGo = "";
+    }
 
-    // GIF preview on hover
-    document.addEventListener("mouseover", e => {
-      if (e.target.tagName === "IMG" && e.target.dataset.gif) {
-        e.target.src = e.target.dataset.gif;
-      }
-    });
-
-    document.addEventListener("mouseout", e => {
-      if (e.target.tagName === "IMG" && e.target.dataset.static) {
-        e.target.src = e.target.dataset.static;
+    goBtn.addEventListener("click", () => {
+      if (linkToGo !== "#") {
+        window.open(linkToGo, "_blank");
+        closeModal();
       }
     });
 
